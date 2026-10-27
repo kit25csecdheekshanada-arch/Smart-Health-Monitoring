@@ -1,6 +1,7 @@
 # Maven Build Artifacts
 target/
 *.jar
+!/.mvn/wrapper/maven-wrapper.jar
 *.war
 *.ear
 *.class
