@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Clinical Alerts & Notifications')}"></head>
+<body>
+
+<div th:replace="~{fragments/layout :: sidebar('alerts')}"></div>
+
+<main class="app-main">
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <div class="page-container">
+        <div th:replace="~{fragments/layout :: alerts}"></div>
+
+        <!-- Title -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+            <div>
+                <h3 class="fw-bold mb-1" style="color: var(--primary-deep);">Clinical Threshold Alerts</h3>
+                <p class="text-muted small mb-0">Automated multi-parameter physiological anomaly surveillance</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-teal d-flex align-items-center gap-1" onclick="window.location.reload()">
+                    <i class="bi bi-arrow-clockwise"></i>
+                    <span>Refresh Alerts</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="card mb-4">
+            <div class="card-body py-2">
+                <ul class="nav nav-pills">
+                    <li class="nav-item">
+                        <a class="nav-link" th:classappend="${currentFilter == 'all'} ? 'active' : ''" th:href="@{/alerts(filter='all')}">
+                            All Recent Alerts
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link position-relative" th:classappend="${currentFilter == 'active'} ? 'active' : ''" th:href="@{/alerts(filter='active')}">
+                            Active Unacknowledged
+                            <span class="badge rounded-pill bg-danger ms-1" th:text="${activeCount}">0</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Alerts Table -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-shield-exclamation text-danger"></i>
+                    <strong>Alert Events Log (<span th:text="${#lists.size(alerts)}">0</span>)</strong>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Alert Timestamp</th>
+                            <th>Severity</th>
+                            <th>Patient</th>
+                            <th>Parameter</th>
+                            <th>Measured Value</th>
+                            <th>Configured Threshold</th>
+                            <th>Diagnostic Message</th>
+                            <th>Acknowledgement Status</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="a : ${alerts}" class="alert-item">
+                            <td class="small text-muted text-nowrap">
+                                <i class="bi bi-clock me-1"></i>
+                                <span th:text="${#temporals.format(a.createdAt, 'yyyy-MM-dd HH:mm:ss')}">Time</span>
+                            </td>
+                            <td>
+                                <span class="badge-status" th:classappend="${a.severity}" th:text="${a.severity}">CRITICAL</span>
+                            </td>
+                            <td>
+                                <a th:href="@{/patients/{id}(id=${a.patientId})}" class="fw-bold text-dark text-decoration-none">
+                                    <span th:text="${a.patientName}">John Doe</span>
+                                </a>
+                                <span class="badge bg-light text-muted border ms-1" th:text="${a.patientCode}">P-1001</span>
+                            </td>
+                            <td>
+                                <strong th:text="${a.parameterName}">Heart Rate</strong>
+                            </td>
+                            <td>
+                                <span class="fw-bold text-danger" th:text="${a.measuredValue}">125.0</span>
+                            </td>
+                            <td class="small text-muted" th:text="${a.thresholdValue}">60-100 bpm</td>
+                            <td class="small" style="max-width: 280px;" th:text="${a.message}">Alert Description</td>
+                            <td>
+                                <span th:if="${a.acknowledged}" class="badge bg-success-subtle text-success border border-success-subtle">
+                                    <i class="bi bi-check-circle me-1"></i>Ack by <span th:text="${a.acknowledgedBy}">Staff</span>
+                                </span>
+                                <span th:unless="${a.acknowledged}" class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                                    <i class="bi bi-exclamation-circle me-1"></i>Requires Action
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <button th:if="${!a.acknowledged}" class="btn btn-sm btn-primary"
+                                        th:onclick="'acknowledgeAlert(' + ${a.id} + ', this)'">
+                                    <i class="bi bi-check2-circle me-1"></i>Acknowledge
+                                </button>
+                                <span th:if="${a.acknowledged}" class="text-muted small">
+                                    <i class="bi bi-check-all text-success"></i> Resolved
+                                </span>
+                            </td>
+                        </tr>
+                        <tr th:if="${alerts.isEmpty()}">
+                            <td colspan="9" class="text-center py-5 text-muted">
+                                <i class="bi bi-check2-circle fs-1 text-success d-block mb-2"></i>
+                                No alerts matching current filter. All physiological telemetry is within normal thresholds.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="medical-disclaimer-banner">
+            <i class="bi bi-exclamation-triangle-fill me-2 fs-6"></i>
+            <strong>Clinical Safety Disclaimer:</strong> Threshold alerts generated by this student prototype application reflect algorithmic rule evaluations and must not be used as clinical diagnostic determinations or replacements for professional emergency medicine care.
+        </div>
+    </div>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+</main>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>

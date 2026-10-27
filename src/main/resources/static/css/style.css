@@ -1,0 +1,489 @@
+/* ===================================================================
+   Smart Patient Health Monitoring System - Medical Dashboard Stylesheet
+   =================================================================== */
+
+:root {
+    --primary-blue: #0284c7;
+    --primary-dark: #0369a1;
+    --primary-deep: #0c4a6e;
+    --primary-light: #e0f2fe;
+    
+    --accent-teal: #0d9488;
+    --accent-teal-dark: #0f766e;
+    --accent-teal-light: #ccfbf1;
+
+    --status-normal: #10b981;
+    --status-normal-bg: #ecfdf5;
+    --status-warning: #f59e0b;
+    --status-warning-bg: #fffbeb;
+    --status-critical: #ef4444;
+    --status-critical-bg: #fef2f2;
+
+    --bg-body: #f8fafc;
+    --bg-card: #ffffff;
+    --border-color: #e2e8f0;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+
+    --sidebar-width: 260px;
+    --header-height: 70px;
+    --card-radius: 14px;
+    --shadow-soft: 0 4px 18px rgba(15, 23, 42, 0.05);
+    --shadow-hover: 0 8px 24px rgba(15, 23, 42, 0.09);
+    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body {
+    background-color: var(--bg-body);
+    color: var(--text-primary);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    margin: 0;
+    overflow-x: hidden;
+}
+
+/* Sidebar Styling */
+.app-sidebar {
+    width: var(--sidebar-width);
+    background: #ffffff;
+    border-right: 1px solid var(--border-color);
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 1030;
+    display: flex;
+    flex-direction: column;
+    transition: var(--transition);
+}
+
+.sidebar-brand {
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    padding: 0 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    text-decoration: none;
+    color: var(--primary-deep);
+    font-weight: 700;
+    font-size: 1.15rem;
+    gap: 0.75rem;
+}
+
+.brand-icon {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, var(--primary-blue), var(--accent-teal));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 1.25rem;
+}
+
+.sidebar-nav {
+    padding: 1.25rem 0.85rem;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.nav-category {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    padding: 0.75rem 0.85rem 0.25rem;
+}
+
+.sidebar-nav .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.75rem 1rem;
+    color: var(--text-secondary);
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 0.93rem;
+    margin-bottom: 0.25rem;
+    transition: var(--transition);
+    text-decoration: none;
+}
+
+.sidebar-nav .nav-link i {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    transition: var(--transition);
+}
+
+.sidebar-nav .nav-link:hover {
+    color: var(--primary-blue);
+    background-color: var(--primary-light);
+}
+
+.sidebar-nav .nav-link:hover i {
+    color: var(--primary-blue);
+}
+
+.sidebar-nav .nav-link.active {
+    color: #ffffff;
+    background: linear-gradient(135deg, var(--primary-blue), var(--accent-teal));
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+}
+
+.sidebar-nav .nav-link.active i {
+    color: #ffffff;
+}
+
+.sidebar-footer {
+    padding: 1.25rem;
+    border-top: 1px solid var(--border-color);
+    background-color: #fafbfc;
+}
+
+/* Main Content Area */
+.app-main {
+    margin-left: var(--sidebar-width);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    transition: var(--transition);
+}
+
+/* Header Bar */
+.app-header {
+    height: var(--header-height);
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.75rem;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.live-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--accent-teal-dark);
+    background-color: var(--accent-teal-light);
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+}
+
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--status-normal);
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    animation: pulse 1.8s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.user-profile-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 24px;
+    background-color: var(--bg-body);
+    border: 1px solid var(--border-color);
+}
+
+.user-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background-color: var(--primary-light);
+    color: var(--primary-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+/* Page Container */
+.page-container {
+    padding: 1.75rem;
+    flex-grow: 1;
+}
+
+/* Card Enhancements */
+.card {
+    background-color: var(--bg-card);
+    border-radius: var(--card-radius);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 1.5rem;
+    transition: var(--transition);
+}
+
+.card:hover {
+    box-shadow: var(--shadow-hover);
+}
+
+.card-header {
+    background-color: transparent;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.15rem 1.35rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.card-body {
+    padding: 1.35rem;
+}
+
+/* KPI Summary Cards */
+.kpi-card {
+    border-radius: var(--card-radius);
+    border: 1px solid var(--border-color);
+    background: #ffffff;
+    padding: 1.4rem;
+    position: relative;
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+.kpi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+}
+
+.kpi-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.5rem;
+}
+
+.kpi-value {
+    font-size: 2.1rem;
+    font-weight: 800;
+    color: var(--primary-deep);
+    line-height: 1.1;
+    margin-bottom: 0.4rem;
+}
+
+.kpi-icon-wrapper {
+    position: absolute;
+    right: 1.25rem;
+    top: 1.25rem;
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+}
+
+.kpi-icon-blue { background: var(--primary-light); color: var(--primary-blue); }
+.kpi-icon-teal { background: var(--accent-teal-light); color: var(--accent-teal); }
+.kpi-icon-amber { background: var(--status-warning-bg); color: var(--status-warning); }
+.kpi-icon-red { background: var(--status-critical-bg); color: var(--status-critical); }
+
+/* Vital Signs Metric Box */
+.vital-metric-card {
+    border-radius: var(--card-radius);
+    border: 1px solid var(--border-color);
+    background: #ffffff;
+    padding: 1.25rem;
+    position: relative;
+    transition: var(--transition);
+}
+
+.vital-metric-card.normal { border-left: 5px solid var(--status-normal); }
+.vital-metric-card.warning { border-left: 5px solid var(--status-warning); }
+.vital-metric-card.critical { border-left: 5px solid var(--status-critical); }
+
+.vital-param-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.vital-param-value {
+    font-size: 2.3rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0.35rem 0;
+}
+
+.vital-param-unit {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.vital-threshold-hint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.4rem;
+}
+
+/* Status Badges */
+.badge-status {
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.badge-status.NORMAL {
+    background-color: var(--status-normal-bg);
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.badge-status.WARNING {
+    background-color: var(--status-warning-bg);
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+
+.badge-status.CRITICAL {
+    background-color: var(--status-critical-bg);
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    animation: flashCritical 2s infinite;
+}
+
+@keyframes flashCritical {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Medical Disclaimer Banner */
+.medical-disclaimer-banner {
+    background: #fffbeb;
+    border: 1px solid #fef3c7;
+    border-left: 4px solid var(--status-warning);
+    padding: 0.9rem 1.25rem;
+    border-radius: 10px;
+    color: #92400e;
+    font-size: 0.85rem;
+    margin-top: 1.5rem;
+}
+
+/* Footer */
+.app-footer {
+    border-top: 1px solid var(--border-color);
+    background-color: #ffffff;
+    padding: 1.25rem 1.75rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Table Design */
+.table {
+    margin-bottom: 0;
+    vertical-align: middle;
+}
+
+.table th {
+    background-color: #f8fafc;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.table td {
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--primary-blue);
+    border-color: var(--primary-blue);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+.btn-teal {
+    background-color: var(--accent-teal);
+    border-color: var(--accent-teal);
+    color: #ffffff;
+}
+
+.btn-teal:hover {
+    background-color: var(--accent-teal-dark);
+    border-color: var(--accent-teal-dark);
+    color: #ffffff;
+}
+
+/* Print View Styles */
+@media print {
+    .app-sidebar, .app-header, .btn, .no-print {
+        display: none !important;
+    }
+    .app-main {
+        margin-left: 0 !important;
+    }
+    body {
+        background: #ffffff !important;
+    }
+    .card {
+        box-shadow: none !important;
+        border: 1px solid #cccccc !important;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 991.98px) {
+    .app-sidebar {
+        transform: translateX(-100%);
+    }
+    .app-sidebar.show {
+        transform: translateX(0);
+    }
+    .app-main {
+        margin-left: 0;
+    }
+}

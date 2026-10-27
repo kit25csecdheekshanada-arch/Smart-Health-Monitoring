@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('System Settings & Thresholds')}"></head>
+<body>
+
+<div th:replace="~{fragments/layout :: sidebar('settings')}"></div>
+
+<main class="app-main">
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <div class="page-container">
+        <div th:replace="~{fragments/layout :: alerts}"></div>
+
+        <div class="mb-4">
+            <h3 class="fw-bold mb-1" style="color: var(--primary-deep);">System Settings & Thresholds</h3>
+            <p class="text-muted small mb-0">Configure physiological normal limits, alert trigger levels, and application telemetry rules</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Left: Threshold Settings Form -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-sliders text-primary"></i>
+                            <strong>Clinical Reference Thresholds</strong>
+                        </div>
+                        <span class="badge bg-primary text-white" sec:authorize="hasRole('ADMIN')">Admin Access</span>
+                        <span class="badge bg-info text-white" sec:authorize="hasRole('DOCTOR')">Doctor Access</span>
+                    </div>
+                    <div class="card-body p-4">
+                        <form th:action="@{/settings/update}" th:object="${settingsDto}" method="post">
+                            <input type="hidden" th:field="*{id}">
+
+                            <!-- Heart Rate -->
+                            <h6 class="fw-bold text-secondary mb-3"><i class="bi bi-heart-pulse text-danger me-2"></i>1. Heart Rate Limits (BPM)</h6>
+                            <div class="row g-3 mb-4">
+                                <div class="col-sm-6">
+                                    <label class="form-label small fw-semibold">Minimum Heart Rate (Bradycardia Trigger)</label>
+                                    <div class="input-group">
+                                        <input type="number" step="1" class="form-control" th:field="*{hrMin}" min="30" max="150" required>
+                                        <span class="input-group-text">bpm</span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="form-label small fw-semibold">Maximum Heart Rate (Tachycardia Trigger)</label>
+                                    <div class="input-group">
+                                        <input type="number" step="1" class="form-control" th:field="*{hrMax}" min="60" max="220" required>
+                                        <span class="input-group-text">bpm</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SpO2 -->
+                            <h6 class="fw-bold text-secondary mb-3"><i class="bi bi-droplet-half text-primary me-2"></i>2. Blood Oxygen Saturation SpO₂ (%)</h6>
+                            <div class="row g-3 mb-4">
+                                <div class="col-sm-6">
+                                    <label class="form-label small fw-semibold">Minimum SpO₂ (Hypoxemia Alert Level)</label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.5" class="form-control" th:field="*{spo2Min}" min="70" max="100" required>
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Body Temperature -->
+                            <h6 class="fw-bold text-secondary mb-3"><i class="bi bi-thermometer-half text-warning me-2"></i>3. Body Temperature Limits (°C)</h6>
+                            <div class="row g-3 mb-4">
+                                <div class="col-sm-6">
+                                    <label class="form-label small fw-semibold">Minimum Normal Temperature (Hypothermia)</label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.1" class="form-control" th:field="*{tempMin}" min="30" max="38" required>
+                                        <span class="input-group-text">°C</span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="form-label small fw-semibold">Maximum Normal Temperature (Pyrexia / Fever)</label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.1" class="form-control" th:field="*{tempMax}" min="36" max="43" required>
+                                        <span class="input-group-text">°C</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Blood Pressure -->
+                            <h6 class="fw-bold text-secondary mb-3"><i class="bi bi-speedometer text-info me-2"></i>4. Blood Pressure Limits (mmHg)</h6>
+                            <div class="row g-3 mb-4">
+                                <div class="col-sm-6 col-md-3">
+                                    <label class="form-label small fw-semibold">Min Systolic</label>
+                                    <div class="input-group">
+                                        <input type="number" step="1" class="form-control" th:field="*{sysBpMin}" min="60" max="140" required>
+                                        <span class="input-group-text">mmHg</span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 col-md-3">
+                                    <label class="form-label small fw-semibold">Max Systolic</label>
+                                    <div class="input-group">
+                                        <input type="number" step="1" class="form-control" th:field="*{sysBpMax}" min="100" max="220" required>
+                                        <span class="input-group-text">mmHg</span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 col-md-3">
+                                    <label class="form-label small fw-semibold">Min Diastolic</label>
+                                    <div class="input-group">
+                                        <input type="number" step="1" class="form-control" th:field="*{diaBpMin}" min="40" max="90" required>
+                                        <span class="input-group-text">mmHg</span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 col-md-3">
+                                    <label class="form-label small fw-semibold">Max Diastolic</label>
+                                    <div class="input-group">
+                                        <input type="number" step="1" class="form-control" th:field="*{diaBpMax}" min="60" max="140" required>
+                                        <span class="input-group-text">mmHg</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Respiratory Rate -->
+                            <h6 class="fw-bold text-secondary mb-3"><i class="bi bi-wind text-teal me-2"></i>5. Respiratory Rate Limits (breaths/min)</h6>
+                            <div class="row g-3 mb-4">
+                                <div class="col-sm-6">
+                                    <label class="form-label small fw-semibold">Min Rate (Bradypnea)</label>
+                                    <div class="input-group">
+                                        <input type="number" step="1" class="form-control" th:field="*{respRateMin}" min="8" max="25" required>
+                                        <span class="input-group-text">bpm</span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="form-label small fw-semibold">Max Rate (Tachypnea)</label>
+                                    <div class="input-group">
+                                        <input type="number" step="1" class="form-control" th:field="*{respRateMax}" min="14" max="45" required>
+                                        <span class="input-group-text">bpm</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Application Preferences -->
+                            <h6 class="fw-bold text-secondary mb-3"><i class="bi bi-gear text-secondary me-2"></i>6. Application Telemetry Preferences</h6>
+                            <div class="row g-3 mb-4">
+                                <div class="col-sm-6">
+                                    <label class="form-label small fw-semibold">Dashboard Auto-Refresh Interval</label>
+                                    <div class="input-group">
+                                        <input type="number" step="1" class="form-control" th:field="*{autoRefreshInterval}" min="3" max="120" required>
+                                        <span class="input-group-text">seconds</span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 d-flex align-items-center mt-4">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" role="switch" id="soundSwitch" th:field="*{soundAlertEnabled}">
+                                        <label class="form-check-label small fw-semibold" for="soundSwitch">Audible Critical Alert Tone</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check-circle me-1"></i>Save Threshold Settings
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: User Profile & Database Info -->
+            <div class="col-lg-4">
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <i class="bi bi-person-circle text-primary me-2"></i><strong>Staff Profile Information</strong>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="user-avatar" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                                <i class="bi bi-person-fill"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-0" sec:authentication="name">Active Clinician</h6>
+                                <span class="badge bg-primary text-white" sec:authentication="principal.authorities">ROLE_DOCTOR</span>
+                            </div>
+                        </div>
+                        <ul class="list-group list-group-flush small">
+                            <li class="list-group-item d-flex justify-content-between px-0">
+                                <span class="text-muted">Account Status:</span>
+                                <span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Active</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between px-0">
+                                <span class="text-muted">Security Encryption:</span>
+                                <span class="fw-semibold">BCrypt Hashed</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between px-0">
+                                <span class="text-muted">Session Timeout:</span>
+                                <span class="fw-semibold">120 Minutes</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <i class="bi bi-database text-info me-2"></i><strong>System & Architecture Specs</strong>
+                    </div>
+                    <div class="card-body small">
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2"><strong>Framework:</strong> Spring Boot 3.4.2</li>
+                            <li class="mb-2"><strong>Java Runtime:</strong> OpenJDK 21 LTS</li>
+                            <li class="mb-2"><strong>Database:</strong> MySQL 8+ / H2 In-Memory</li>
+                            <li class="mb-2"><strong>ORM Engine:</strong> Hibernate & Spring Data JPA</li>
+                            <li class="mb-2"><strong>Frontend:</strong> Thymeleaf & Bootstrap 5</li>
+                            <li class="mb-2"><strong>IoT Endpoint:</strong> <code>POST /api/v1/vitals</code></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+</main>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>

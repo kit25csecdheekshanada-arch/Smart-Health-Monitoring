@@ -1,0 +1,104 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>edu.kit</groupId>
+  <artifactId>smart-patient-monitoring</artifactId>
+  <version>1.0.0</version>
+  <name>Smart Patient Health Monitoring System</name>
+  <description>Intelligent healthcare monitoring system with IoT REST API, vital signs analytics, alert management, and responsive medical dashboard</description>
+
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>3.4.2</version>
+    <relativePath/>
+  </parent>
+
+  <properties>
+    <java.version>21</java.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <commons-csv.version>1.11.0</commons-csv.version>
+  </properties>
+
+  <dependencies>
+    <!-- Web and Thymeleaf -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-thymeleaf</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.thymeleaf.extras</groupId>
+      <artifactId>thymeleaf-extras-springsecurity6</artifactId>
+    </dependency>
+
+    <!-- Spring Security -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+
+    <!-- Spring Data JPA & Validation -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
+
+    <!-- MySQL Driver -->
+    <dependency>
+      <groupId>com.mysql</groupId>
+      <artifactId>mysql-connector-j</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
+    <!-- H2 In-Memory/File Database (Fallback & Testing) -->
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
+    <!-- CSV Generation for Medical Reports -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-csv</artifactId>
+      <version>${commons-csv.version}</version>
+    </dependency>
+
+    <!-- Testing -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>-javaagent:"${user.home}/.m2/repository/net/bytebuddy/byte-buddy-agent/1.15.11/byte-buddy-agent-1.15.11.jar" -XX:+EnableDynamicAgentLoading</argLine>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

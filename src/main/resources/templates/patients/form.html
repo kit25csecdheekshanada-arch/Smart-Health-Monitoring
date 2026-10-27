@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Edit Patient Profile')}"></head>
+<body>
+
+<div th:replace="~{fragments/layout :: sidebar('patients')}"></div>
+
+<main class="app-main">
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <div class="page-container">
+        <div th:replace="~{fragments/layout :: alerts}"></div>
+
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <a th:href="@{/patients/{id}(id=${patientDto.id})}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i>Cancel & Return
+            </a>
+            <h3 class="fw-bold mb-0" style="color: var(--primary-deep);">Edit Patient Record</h3>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-pencil-square text-primary me-2"></i><strong>Update Patient Demographics & Allocation</strong>
+            </div>
+            <div class="card-body p-4">
+                <form th:action="@{/patients/edit/{id}(id=${patientDto.id})}" th:object="${patientDto}" method="post">
+                    <input type="hidden" th:field="*{id}">
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Patient Code / MRN *</label>
+                            <input type="text" class="form-control" th:field="*{patientCode}" required>
+                            <div class="text-danger small" th:if="${#fields.hasErrors('patientCode')}" th:errors="*{patientCode}"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">First Name *</label>
+                            <input type="text" class="form-control" th:field="*{firstName}" required>
+                            <div class="text-danger small" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Last Name *</label>
+                            <input type="text" class="form-control" th:field="*{lastName}" required>
+                            <div class="text-danger small" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}"></div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Age (Years) *</label>
+                            <input type="number" class="form-control" th:field="*{age}" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Gender *</label>
+                            <select class="form-select" th:field="*{gender}">
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Blood Group</label>
+                            <select class="form-select" th:field="*{bloodGroup}">
+                                <option value="">Unknown</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Monitoring Status *</label>
+                            <select class="form-select" th:field="*{monitoringStatus}">
+                                <option value="ACTIVE">ACTIVE (Monitored)</option>
+                                <option value="INACTIVE">INACTIVE</option>
+                                <option value="DISCHARGED">DISCHARGED</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Room / Bed Allocation</label>
+                            <input type="text" class="form-control" th:field="*{roomBedNumber}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Assigned Physician</label>
+                            <input type="text" class="form-control" th:field="*{assignedDoctor}">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Primary Contact Phone</label>
+                            <input type="text" class="form-control" th:field="*{contactNumber}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Emergency Contact</label>
+                            <input type="text" class="form-control" th:field="*{emergencyContact}">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Medical History & Chronic Conditions</label>
+                            <textarea class="form-control" rows="3" th:field="*{medicalHistory}"></textarea>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Clinical Care Notes</label>
+                            <textarea class="form-control" rows="3" th:field="*{notes}"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                        <a th:href="@{/patients/{id}(id=${patientDto.id})}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-1"></i>Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+</main>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>

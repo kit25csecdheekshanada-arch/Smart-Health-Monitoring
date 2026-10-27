@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${patient.fullName} + ' — Patient Profile')}"></head>
+<body>
+
+<div th:replace="~{fragments/layout :: sidebar('patients')}"></div>
+
+<main class="app-main">
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <div class="page-container">
+        <div th:replace="~{fragments/layout :: alerts}"></div>
+
+        <!-- Back & Action Bar -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <a th:href="@{/patients}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i>Back to Directory
+                </a>
+                <h3 class="fw-bold mb-0" style="color: var(--primary-deep);" th:text="${patient.fullName}">John Doe</h3>
+                <span class="badge bg-primary fs-6" th:text="${patient.patientCode}">P-1001</span>
+                <span class="badge" th:classappend="${patient.monitoringStatus == 'ACTIVE' ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-secondary-subtle text-secondary'}"
+                      th:text="${patient.monitoringStatus}">ACTIVE</span>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-teal d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#addReadingModal">
+                    <i class="bi bi-plus-circle"></i>
+                    <span>Record Vitals</span>
+                </button>
+                <button type="button" class="btn btn-outline-primary d-flex align-items-center gap-1" th:onclick="'triggerSimulation(' + ${patient.id} + ', false)'">
+                    <i class="bi bi-broadcast"></i>
+                    <span>Simulate Sensor</span>
+                </button>
+                <a th:href="@{/patients/edit/{id}(id=${patient.id})}" class="btn btn-outline-secondary">
+                    <i class="bi bi-pencil me-1"></i>Edit Profile
+                </a>
+            </div>
+        </div>
+
+        <!-- Patient Demographics & Profile Grid -->
+        <div class="row g-3 mb-4">
+            <!-- Left Info Card -->
+            <div class="col-lg-4">
+                <div class="card h-100">
+                    <div class="card-header bg-light">
+                        <i class="bi bi-person-vcard text-primary me-2"></i><strong>Medical Demographics</strong>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush small">
+                            <li class="list-group-item d-flex justify-content-between px-0">
+                                <span class="text-muted">Age / Gender:</span>
+                                <strong th:text="${patient.age + ' years · ' + patient.gender}">45 yrs · Male</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between px-0">
+                                <span class="text-muted">Blood Group:</span>
+                                <strong th:text="${patient.bloodGroup != null ? patient.bloodGroup : 'Not Specified'}">O+</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between px-0">
+                                <span class="text-muted">Bed / Ward Location:</span>
+                                <strong class="text-danger" th:text="${patient.roomBedNumber != null ? patient.roomBedNumber : 'Unallocated'}">ICU-Bed-01</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between px-0">
+                                <span class="text-muted">Assigned Physician:</span>
+                                <strong th:text="${patient.assignedDoctor != null ? patient.assignedDoctor : 'Unassigned'}">Dr. Sarah Johnson</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between px-0">
+                                <span class="text-muted">Contact Phone:</span>
+                                <span th:text="${patient.contactNumber != null ? patient.contactNumber : '—'}">+1-555-0101</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between px-0">
+                                <span class="text-muted">Emergency Contact:</span>
+                                <span th:text="${patient.emergencyContact != null ? patient.emergencyContact : '—'}">+1-555-0102</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between px-0">
+                                <span class="text-muted">Admitted Date:</span>
+                                <span th:text="${#temporals.format(patient.createdAt, 'yyyy-MM-dd')}">2026-10-24</span>
+                            </li>
+                        </ul>
+
+                        <div class="mt-3 pt-3 border-top">
+                            <h6 class="small fw-bold text-secondary mb-1">Clinical History:</h6>
+                            <p class="small text-muted mb-3" th:text="${patient.medicalHistory != null and !patient.medicalHistory.isEmpty() ? patient.medicalHistory : 'No prior chronic conditions reported.'}">History text</p>
+
+                            <h6 class="small fw-bold text-secondary mb-1">Care Notes:</h6>
+                            <p class="small text-muted mb-0" th:text="${patient.notes != null and !patient.notes.isEmpty() ? patient.notes : 'Standard clinical observation protocol.'}">Care notes text</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Latest Vitals Cards -->
+            <div class="col-lg-8">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-heart-pulse-fill text-danger"></i>
+                            <strong>Current Vital Signs Snapshot</strong>
+                        </div>
+                        <span class="small text-muted" th:if="${latestReading != null}">
+                            Recorded: <span th:text="${#temporals.format(latestReading.recordedAt, 'HH:mm:ss')}">10:20:00</span>
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3" th:if="${latestReading != null}">
+                            <div class="col-6 col-md-4">
+                                <div class="vital-metric-card" th:classappend="${latestReading.heartRate < settings.hrMin || latestReading.heartRate > settings.hrMax} ? 'warning' : 'normal'">
+                                    <div class="vital-param-title">Heart Rate</div>
+                                    <div class="vital-param-value" th:text="${#numbers.formatDecimal(latestReading.heartRate, 1, 0)}">75</div>
+                                    <div class="vital-param-unit">BPM</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="vital-metric-card" th:classappend="${latestReading.spo2 < settings.spo2Min} ? 'critical' : 'normal'">
+                                    <div class="vital-param-title">Oxygen (SpO₂)</div>
+                                    <div class="vital-param-value" th:text="${#numbers.formatDecimal(latestReading.spo2, 1, 1)}">98.2</div>
+                                    <div class="vital-param-unit">%</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="vital-metric-card" th:classappend="${latestReading.temperature < settings.tempMin || latestReading.temperature > settings.tempMax} ? 'warning' : 'normal'">
+                                    <div class="vital-param-title">Temperature</div>
+                                    <div class="vital-param-value" th:text="${#numbers.formatDecimal(latestReading.temperature, 1, 1)}">36.6</div>
+                                    <div class="vital-param-unit">°C</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="vital-metric-card" th:classappend="${latestReading.systolicBP < settings.sysBpMin || latestReading.systolicBP > settings.sysBpMax} ? 'warning' : 'normal'">
+                                    <div class="vital-param-title">Blood Pressure</div>
+                                    <div class="vital-param-value" th:text="${latestReading.bpString}">120/80</div>
+                                    <div class="vital-param-unit">mmHg</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="vital-metric-card" th:classappend="${latestReading.respiratoryRate < settings.respRateMin || latestReading.respiratoryRate > settings.respRateMax} ? 'warning' : 'normal'">
+                                    <div class="vital-param-title">Respiratory</div>
+                                    <div class="vital-param-value" th:text="${#numbers.formatDecimal(latestReading.respiratoryRate, 1, 0)}">16</div>
+                                    <div class="vital-param-unit">breaths/min</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="vital-metric-card text-center d-flex flex-column justify-content-center align-items-center">
+                                    <span class="small text-muted fw-semibold mb-1">Telemetry Status</span>
+                                    <span class="badge-status" th:classappend="${latestReading.status}" th:text="${latestReading.status}">NORMAL</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div th:if="${latestReading == null}" class="py-5 text-center text-muted">
+                            <i class="bi bi-activity fs-1 d-block mb-2 text-muted"></i>
+                            No vital signs recorded for this patient yet. Use "Record Vitals" or "Simulate Sensor" to begin.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vital Sign Historical Chart -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-graph-up text-primary me-2"></i><strong>Patient Physiological Trend Chart</strong>
+            </div>
+            <div class="card-body">
+                <div style="position: relative; height: 320px; width: 100%;">
+                    <canvas id="patientTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Alerts for this Patient -->
+        <div class="card mb-4" th:if="${!alerts.isEmpty()}">
+            <div class="card-header bg-light">
+                <i class="bi bi-bell-fill text-danger me-2"></i><strong>Patient Alerts History</strong>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Alert Time</th>
+                            <th>Severity</th>
+                            <th>Parameter</th>
+                            <th>Measured Value</th>
+                            <th>Diagnostic Message</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="a : ${alerts}" class="alert-item">
+                            <td class="small text-muted" th:text="${#temporals.format(a.createdAt, 'yyyy-MM-dd HH:mm:ss')}">Time</td>
+                            <td><span class="badge-status" th:classappend="${a.severity}" th:text="${a.severity}">CRITICAL</span></td>
+                            <td><strong th:text="${a.parameterName}">SpO2</strong></td>
+                            <td th:text="${a.measuredValue}">89.2</td>
+                            <td class="small text-muted" th:text="${a.message}">Diagnostic text</td>
+                            <td>
+                                <span th:if="${a.acknowledged}" class="badge bg-success-subtle text-success border border-success-subtle">
+                                    <i class="bi bi-check-circle me-1"></i>Acknowledged
+                                </span>
+                                <span th:unless="${a.acknowledged}" class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                                    Active Unread
+                                </span>
+                            </td>
+                            <td>
+                                <button th:if="${!a.acknowledged}" class="btn btn-sm btn-outline-primary"
+                                        th:onclick="'acknowledgeAlert(' + ${a.id} + ', this)'">
+                                    Acknowledge
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- All Vital Sign Measurements Table -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-clock-history text-primary"></i>
+                    <strong>Detailed Measurement History</strong>
+                </div>
+                <a th:href="@{/reports/export-csv(patientId=${patient.id})}" class="btn btn-sm btn-outline-success">
+                    <i class="bi bi-download me-1"></i>Export CSV
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Heart Rate</th>
+                            <th>SpO₂</th>
+                            <th>Temperature</th>
+                            <th>Blood Pressure</th>
+                            <th>Resp. Rate</th>
+                            <th>Status</th>
+                            <th>Telemetry Type</th>
+                            <th>Alert Diagnostic</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="v : ${vitalsHistory}">
+                            <td class="small text-muted" th:text="${#temporals.format(v.recordedAt, 'yyyy-MM-dd HH:mm:ss')}">Time</td>
+                            <td><strong th:text="${#numbers.formatDecimal(v.heartRate, 1, 0)}">75</strong> bpm</td>
+                            <td><strong th:text="${#numbers.formatDecimal(v.spo2, 1, 1)}">98.2</strong>%</td>
+                            <td><strong th:text="${#numbers.formatDecimal(v.temperature, 1, 1)}">36.6</strong> °C</td>
+                            <td><strong th:text="${v.bpString}">120/80</strong> mmHg</td>
+                            <td><strong th:text="${#numbers.formatDecimal(v.respiratoryRate, 1, 0)}">16</strong> bpm</td>
+                            <td><span class="badge-status" th:classappend="${v.status}" th:text="${v.status}">NORMAL</span></td>
+                            <td>
+                                <span th:if="${v.simulated}" class="badge bg-secondary-subtle text-secondary">Simulated</span>
+                                <span th:unless="${v.simulated}" class="badge bg-primary-subtle text-primary">Sensor</span>
+                            </td>
+                            <td class="small text-muted" th:text="${v.alertMessage != null and !v.alertMessage.isEmpty() ? v.alertMessage : '—'}">—</td>
+                        </tr>
+                        <tr th:if="${vitalsHistory.isEmpty()}">
+                            <td colspan="9" class="text-center py-4 text-muted">No measurements recorded yet.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+</main>
+
+<!-- Record Vitals Modal -->
+<div class="modal fade" id="addReadingModal" tabindex="-1" aria-labelledby="addReadingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form th:action="@{/patients/{id}/vitals(id=${patient.id})}" th:object="${newReading}" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="addReadingModalLabel">
+                        <i class="bi bi-heart-pulse me-2 text-danger"></i>Manual Vital Sign Recording
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Heart Rate (bpm) *</label>
+                        <input type="number" step="0.1" class="form-control" th:field="*{heartRate}" min="20" max="250" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Oxygen Saturation SpO₂ (%) *</label>
+                        <input type="number" step="0.1" class="form-control" th:field="*{spo2}" min="50" max="100" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Body Temperature (°C) *</label>
+                        <input type="number" step="0.1" class="form-control" th:field="*{temperature}" min="25" max="45" required>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Systolic BP (mmHg)</label>
+                            <input type="number" step="1" class="form-control" th:field="*{systolicBP}" min="40" max="260">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Diastolic BP (mmHg)</label>
+                            <input type="number" step="1" class="form-control" th:field="*{diastolicBP}" min="30" max="160">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Respiratory Rate (breaths/min)</label>
+                        <input type="number" step="1" class="form-control" th:field="*{respiratoryRate}" min="4" max="60">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-1"></i>Save Measurement</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+<script th:inline="javascript">
+/*<![CDATA[*/
+    const patientReadings = /*[[${vitalsHistory}]]*/ [];
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctx = document.getElementById('patientTrendChart');
+        if (!ctx || patientReadings.length === 0) return;
+
+        const sorted = [...patientReadings].reverse();
+        const labels = sorted.map(r => {
+            const d = new Date(r.recordedAt);
+            return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+        });
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Heart Rate (bpm)',
+                        data: sorted.map(r => r.heartRate),
+                        borderColor: '#0284c7',
+                        tension: 0.3
+                    },
+                    {
+                        label: 'SpO₂ (%)',
+                        data: sorted.map(r => r.spo2),
+                        borderColor: '#0d9488',
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Temperature (°C)',
+                        data: sorted.map(r => r.temperature),
+                        borderColor: '#f59e0b',
+                        yAxisID: 'y1',
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        title: { display: true, text: 'BPM / %' }
+                    },
+                    y1: {
+                        position: 'right',
+                        title: { display: true, text: 'Temperature (°C)' },
+                        grid: { drawOnChartArea: false }
+                    }
+                }
+            }
+        });
+    });
+/*]]>*/
+</script>
+
+</body>
+</html>

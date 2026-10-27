@@ -1,0 +1,25 @@
+# Maven Build Artifacts
+target/
+*.jar
+*.war
+*.ear
+*.class
+
+# Embedded Local Database
+data/
+*.mv.db
+*.trace.db
+
+# IDE and Editor Files
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+*.log
+
+# OS Generated
+Thumbs.db
+Desktop.ini
+.DS_Store

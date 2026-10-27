@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Patient Health Reports & Analytics')}"></head>
+<body>
+
+<div th:replace="~{fragments/layout :: sidebar('reports')}"></div>
+
+<main class="app-main">
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <div class="page-container">
+        <div th:replace="~{fragments/layout :: alerts}"></div>
+
+        <!-- Title & Export Toolbar -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+            <div>
+                <h3 class="fw-bold mb-1" style="color: var(--primary-deep);">Patient Health Reports & Analytics</h3>
+                <p class="text-muted small mb-0">Generate vital trend reports, statistical telemetry summaries, and clinical CSV archives</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-secondary d-flex align-items-center gap-1" onclick="window.print()">
+                    <i class="bi bi-printer"></i>
+                    <span>Print Report</span>
+                </button>
+                <a th:href="@{/reports/export-csv(patientId=${selectedPatientId}, startDate=${startDate}, endDate=${endDate})}" class="btn btn-primary d-flex align-items-center gap-1">
+                    <i class="bi bi-file-earmark-arrow-down"></i>
+                    <span>Export to CSV</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Filter Form -->
+        <div class="card mb-4 no-print">
+            <div class="card-body">
+                <form th:action="@{/reports/view}" method="get" class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Patient:</label>
+                        <select class="form-select" name="patientId">
+                            <option value="">-- All Patients --</option>
+                            <option th:each="p : ${patients}"
+                                    th:value="${p.id}"
+                                    th:text="${p.fullName + ' (' + p.patientCode + ')'}"
+                                    th:selected="${selectedPatientId != null and selectedPatientId == p.id}">
+                                John Doe
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Start Date:</label>
+                        <input type="date" class="form-control" name="startDate" th:value="${startDate}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">End Date:</label>
+                        <input type="date" class="form-control" name="endDate" th:value="${endDate}">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-teal w-100">
+                            <i class="bi bi-search me-1"></i>Generate
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Statistical KPI Summary -->
+        <div class="row g-3 mb-4" th:if="${stats != null}">
+            <div class="col-6 col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-title">Measurements</div>
+                    <div class="kpi-value" th:text="${stats.totalReadings}">0</div>
+                    <small class="text-muted">Total readings in window</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-title">Nominal Records</div>
+                    <div class="kpi-value text-success" th:text="${stats.normalCount}">0</div>
+                    <small class="text-success">Within normal range</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-title">Warning Records</div>
+                    <div class="kpi-value text-warning" th:text="${stats.warningCount}">0</div>
+                    <small class="text-warning">Threshold excursions</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-title">Critical Events</div>
+                    <div class="kpi-value text-danger" th:text="${stats.criticalCount}">0</div>
+                    <small class="text-danger">Critical anomalies</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vital Sign Statistical Summary Table -->
+        <div class="card mb-4" th:if="${stats != null and stats.totalReadings > 0}">
+            <div class="card-header">
+                <i class="bi bi-calculator text-primary me-2"></i><strong>Physiological Statistics Aggregate (Min / Max / Mean)</strong>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle text-center">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Unit</th>
+                            <th>Minimum</th>
+                            <th>Average</th>
+                            <th>Maximum</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="text-start fw-bold">Heart Rate</td>
+                            <td>bpm</td>
+                            <td th:text="${stats.hrMin}">60</td>
+                            <td class="fw-bold text-primary" th:text="${stats.hrAvg}">75.2</td>
+                            <td th:text="${stats.hrMax}">98</td>
+                        </tr>
+                        <tr>
+                            <td class="text-start fw-bold">Oxygen Saturation (SpO₂)</td>
+                            <td>%</td>
+                            <td th:text="${stats.spo2Min}">92.0</td>
+                            <td class="fw-bold text-teal" th:text="${stats.spo2Avg}">97.8</td>
+                            <td th:text="${stats.spo2Max}">99.9</td>
+                        </tr>
+                        <tr>
+                            <td class="text-start fw-bold">Body Temperature</td>
+                            <td>°C</td>
+                            <td th:text="${stats.tempMin}">36.2</td>
+                            <td class="fw-bold text-warning" th:text="${stats.tempAvg}">36.8</td>
+                            <td th:text="${stats.tempMax}">37.9</td>
+                        </tr>
+                        <tr>
+                            <td class="text-start fw-bold">Systolic Blood Pressure</td>
+                            <td>mmHg</td>
+                            <td th:text="${stats.sysMin}">110</td>
+                            <td class="fw-bold" th:text="${stats.sysAvg}">122.5</td>
+                            <td th:text="${stats.sysMax}">145</td>
+                        </tr>
+                        <tr>
+                            <td class="text-start fw-bold">Diastolic Blood Pressure</td>
+                            <td>mmHg</td>
+                            <td th:text="${stats.diaMin}">70</td>
+                            <td class="fw-bold" th:text="${stats.diaAvg}">81.0</td>
+                            <td th:text="${stats.diaMax}">92</td>
+                        </tr>
+                        <tr>
+                            <td class="text-start fw-bold">Respiratory Rate</td>
+                            <td>breaths/min</td>
+                            <td th:text="${stats.rrMin}">12</td>
+                            <td class="fw-bold" th:text="${stats.rrAvg}">16.4</td>
+                            <td th:text="${stats.rrMax}">24</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Report Vitals Table -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="bi bi-file-earmark-medical text-primary me-2"></i>
+                    <strong>Tabular Telemetry Records</strong>
+                    <span th:if="${selectedPatient != null}" class="badge bg-light text-muted border ms-2" th:text="${selectedPatient.fullName}">Patient</span>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Recorded At</th>
+                            <th>Patient</th>
+                            <th>Heart Rate</th>
+                            <th>SpO₂</th>
+                            <th>Temperature</th>
+                            <th>BP (mmHg)</th>
+                            <th>Resp. Rate</th>
+                            <th>Status</th>
+                            <th>Alert Diagnostic</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="r : ${readings}">
+                            <td class="small text-muted" th:text="${#temporals.format(r.recordedAt, 'yyyy-MM-dd HH:mm:ss')}">Time</td>
+                            <td>
+                                <span class="fw-semibold" th:text="${r.patientName}">John Doe</span>
+                                <span class="badge bg-light text-muted border ms-1" th:text="${r.patientCode}">P-1001</span>
+                            </td>
+                            <td><span th:text="${#numbers.formatDecimal(r.heartRate, 1, 0)}">75</span> bpm</td>
+                            <td><span th:text="${#numbers.formatDecimal(r.spo2, 1, 1)}">98.0</span>%</td>
+                            <td><span th:text="${#numbers.formatDecimal(r.temperature, 1, 1)}">36.6</span> °C</td>
+                            <td><span th:text="${r.bpString}">120/80</span></td>
+                            <td><span th:text="${#numbers.formatDecimal(r.respiratoryRate, 1, 0)}">16</span> bpm</td>
+                            <td><span class="badge-status" th:classappend="${r.status}" th:text="${r.status}">NORMAL</span></td>
+                            <td class="small text-muted" th:text="${r.alertMessage != null and !r.alertMessage.isEmpty() ? r.alertMessage : '—'}">—</td>
+                        </tr>
+                        <tr th:if="${readings == null or readings.isEmpty()}">
+                            <td colspan="9" class="text-center py-4 text-muted">
+                                Select a patient or adjust the date filter above and click "Generate" to populate the report.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+</main>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>
